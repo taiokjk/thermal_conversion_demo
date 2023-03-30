@@ -7,6 +7,7 @@ import glob
 import pathlib
 import subprocess
 import configparser
+import os
 
 # Read config file
 config = configparser.ConfigParser()
@@ -18,8 +19,14 @@ source_path = config['General']['source_path']
 output_path = config['General']['output_path']
 if not source_path:
     source_path = 'images'
+else:
+    source_path = source_path.replace("\\", "/")
 if not output_path:
     output_path = 'images'
+else:
+    output_path = output_path.replace("\\", "/")
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
 # Thermal config
 distance = config['Thermal Metadata'].getfloat('distance')
@@ -56,11 +63,7 @@ for i in files:
     outDs = None
 
 #use exiftool to append geodata from JPGs to TIFs
-if source_path == 'images':
-    p = subprocess.Popen(['exiftool','-tagsfromfile', '/%d%f.JPG' , 
-                        "'-gps*'", '-ext', 'tif', output_path ], stdout=None)
-else:
-    p = subprocess.Popen(['exiftool','-tagsfromfile', f'{source_path}/%d%f.JPG' , 
+p = subprocess.Popen(['exiftool','-tagsfromfile', f'{source_path}/%f.JPG' , 
                         "'-gps*'", '-ext', 'tif', output_path ], stdout=None)
                         
 #kill subprocess 
