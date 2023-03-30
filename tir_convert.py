@@ -14,8 +14,12 @@ config.read('config.ini')
 
 # General config
 sdk_path = config['General']['dji_thermal_sdk_folder']
-image_path = config['General']['image_path']
+source_path = config['General']['source_path']
 output_path = config['General']['output_path']
+if not source_path:
+    source_path = 'images'
+if not output_path:
+    output_path = 'images'
 
 # Thermal config
 distance = config['Thermal Metadata'].getfloat('distance')
@@ -33,10 +37,7 @@ thermal = Thermal(
 )
 
 #get list of JPGs to convert
-if not image_path:
-    files = list(pathlib.Path('images').glob('*T.JPG'))
-else:
-    files = list(pathlib.Path(image_path).glob('*T.JPG'))
+files = list(pathlib.Path(source_path).glob('*T.JPG'))
 
 #iterate through JPGs, convert to temperature, and write out to TIFs
 for i in files:    
@@ -48,20 +49,30 @@ for i in files:
     filename = pathlib.Path(i).stem
     # create the output image
     driver = gdal.GetDriverByName('GTiff')
-    outDs = driver.Create('images/' + filename + '.tif', temperature.shape[1], temperature.shape[0], 1, gdal.GDT_Float32)
+    outDs = driver.Create(f'{output_path}/' + filename + '.tif', temperature.shape[1], temperature.shape[0], 1, gdal.GDT_Float32)
     outband = outDs.GetRasterBand(1)
     #write temp to array
     outband.WriteArray(temperature)
     outDs = None
 
 #use exiftool to append geodata from JPGs to TIFs
-p = subprocess.Popen(['exiftool','-tagsfromfile','%d%f.JPG' , "'-gps*'", '-ext', 'tif', "images" ], stdout=None)
+if source_path == 'images':
+    p = subprocess.Popen(['exiftool','-tagsfromfile', '/%d%f.JPG' , 
+                        "'-gps*'", '-ext', 'tif', output_path ], stdout=None)
+else:
+    p = subprocess.Popen(['exiftool','-tagsfromfile', f'{source_path}/%d%f.JPG' , 
+                        "'-gps*'", '-ext', 'tif', output_path ], stdout=None)
+                        
 #kill subprocess 
 p.wait()
 p.kill()
 
 #remove redundant files
-for orig in glob.iglob(path.join('./images', '*.tif_original')):
-    remove(orig)
+if output_path == 'images':
+    for orig in glob.iglob(path.join('./images', '*.tif_original')):
+        remove(orig)
+else:
+    for orig in glob.iglob(path.join(output_path, '*.tif_original')):
+        remove(orig)
 
 print("Done processing")
