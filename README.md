@@ -1,3 +1,8 @@
+## Fork update 03/30/2023
+Switched to DJI Thermal SDK v1.4 0922202.
+
+Added configuration file for thermal metadata and input/output paths. Use config.ini file for configs.
+
 # thermal_conversion_demo
 
 Tutorial on how to use thermal_parser and exiftool to convert DJI radiometric JPG (R-JPG) to TIF with temp values and append GPS metadata
