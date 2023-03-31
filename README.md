@@ -1,5 +1,5 @@
 ## Fork update 03/30/2023
-Switched to DJI Thermal SDK v1.4 0922202.
+Switched to DJI Thermal SDK v1.4 0922202. Confirmed working with T_JPG taken by Mavic 3 Thermmal.
 
 Added configuration file for thermal metadata and input/output paths. Use config.ini file for configs.
 
